@@ -1,6 +1,6 @@
 #=====================================PRE-PROCESSING========================================
 
-#=====================================Data Retrieval========================================
+#-------------------------------------Data Retrieval----------------------------------------
 # Static parts of the URL
 link_prefix="ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase3/data/"
 link_suffix_1=".chrom11.ILLUMINA.bwa.GBR.exome.20120522.bam"
@@ -16,7 +16,7 @@ for i in $(seq -w 100 140); do
   wget ${link_prefix}${sample_prefix}${i}${link_middle}${sample_prefix}${i}${link_suffix_2}
 done
 
-#===============BAM File Quality Control and Reference Genome Retrieval=====================
+#---------------BAM File Quality Control and Reference Genome Retrieval---------------------
 for file in *.bam; do samtools flagstat $file | grep "QC";done # checking the quality of the BAM files
 
 for file in *.bam; do echo $file; samtools view -H $file | grep '^@SQ'| grep 'UR';done # Checking the reference assembly identifier
@@ -26,7 +26,7 @@ samtools faidx chr11.fa # Indexing the chromosome 11 reference genome
 
 gatk CreateSequenceDictionary R=my_sequence.fa O=my_sequence.dict # Creating a sequence dictionary for the reference genome
 
-#================Realignment to Reference Genome GRCh38, Chromosome 11======================
+#----------------Realignment to Reference Genome GRCh38, Chromosome 11----------------------
 # Loop converting BAM files to fastq format and shuffling reads
 echo "Beginning conversion from BAM to fastq"
 for file in *.bam; do
@@ -88,7 +88,7 @@ done
 # Pasting the files together
 paste -d "," old_mapped_stats.csv new_mapped_stats.csv > mapped_stats.csv
 
-#=====================================Mark Duplicates=======================================
+#-------------------------------------Mark Duplicates---------------------------------------
 # Locating and tag duplicate reads in the aligned bam files, as well as create an index bam file
 for file in aligned*.bam; do
   echo "Beginning duplicate marking of $file"
@@ -108,7 +108,7 @@ for file in marked_dup_metrics_*.txt; do
   echo "$sample_name,$duplication_percentage" >> duplicate_percentage.csv
 done
 
-#=========================Base Quality Score Recalibration (BQSR)===========================
+#-------------------------Base Quality Score Recalibration (BQSR)---------------------------
 # First pass - Creating recalibration tables for each marked duplicate BAM file
 for file in marked_dup_aligned*.bam; do
   echo "Creating recalibration table corresponding to $file"
@@ -146,7 +146,7 @@ done
 
 #===================================VARIANT DISCOVERY=======================================
 
-#====================================HaplotypeCaller========================================
+#------------------------------------HaplotypeCaller----------------------------------------
 # Creation of GVCF files using GATK HaplotypeCaller
 for file in recalibrated_*.bam; do
   echo "Starting creation of GVCF for $file"
@@ -173,7 +173,7 @@ for file in ../vcf/*.g.vcf; do
   echo "$sample_name,$stats" >> "$stats_file"
 done
 
-#====================================Consolidate GVCFs======================================
+#------------------------------------Consolidate GVCFs--------------------------------------
 # Creating the sample map for GenomicsDBImport
 cohort_sample_map="../vcf/cohort.sample_map"
 touch "$cohort_sample_map"
@@ -192,7 +192,7 @@ gatk GenomicsDBImport \
   -L chr11
 echo "GenomicsDBImport complete"
 
-#=====================================Genotype GVCFs========================================
+#-------------------------------------Genotype GVCFs----------------------------------------
 # GenotypeGVCFs
 echo "Running GenotypeGVCFs"
 gatk GenotypeGVCFs \
@@ -213,7 +213,7 @@ echo "Metrics for chr11_cohort.vcf saved to $cohort_stats_file"
 
 #=====================================CALLSET REFINEMENT=====================================
 
-#============================Variant Quality Score Recalibration=============================
+#----------------------------Variant Quality Score Recalibration-----------------------------
 # Beginning SNP Filtering
 echo "Beginning SNP Filtering"
 gatk VariantRecalibrator \
@@ -264,7 +264,7 @@ gatk ApplyVQSR \
   --truth-sensitivity-filter-level 99.0 \
   -mode INDEL
 
-#==================================Relevant Sample Isolation=================================
+#----------------------------------Relevant Sample Isolation---------------------------------
 # Creating a relevant_samples.txt file
 cat << EOF > relevant_samples.txt
 recalibrated_marked_dup_alignedHG00100
@@ -284,7 +284,7 @@ EOF
 echo "Filtering relevant samples from recalibrated VCF"
 bcftools view --samples-file relevant_samples.txt ../vcf/recal_filtered_chr11_cohort.vcf > ../vcf/relevant_recal_filtered_chr11_cohort.vcf
 
-#=====================================Variant Annotation======================================
+#-------------------------------------Variant Annotation--------------------------------------
 # Running snpEff for variant annotation
 echo "Annotating filtered VCF with snpEff"
 java -jar ../../../apps/snpEff/snpEff.jar -v -stats ../statistics/annot_metrics.html -csvStats ../statistics/annot_metrics.csv hg38 relevant_recal_filtered_chr11_cohort.vcf > annotated_relevant_recal_filtered_chr11_cohort.ann.vcf

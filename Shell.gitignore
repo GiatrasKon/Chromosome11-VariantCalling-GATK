@@ -1,0 +1,63 @@
+# Temporary files created by editors
+*~
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+
+# Logs
+*.log
+
+# Shell history files
+.history
+
+# Environment files
+.env
+.env.*
+
+# Compiled or temporary scripts
+*.out
+*.o
+*.a
+*.so
+*.exe
+*.bin
+
+# MacOS-specific files
+.DS_Store
+
+# Windows-specific files
+Thumbs.db
+Desktop.ini
+
+# Directory metadata
+.idea/
+.vscode/
+.project
+
+# Temporary files created by tools
+*.lock
+*.pid
+*.seed
+*.status
+
+# Generated documentation
+docs/generated/
+*.html
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Backup files
+*.backup
+
+# User-specific overrides
+config.local
+
+# Test output
+test-results/
+coverage/

@@ -1,0 +1,2 @@
+cohort_file,number of samples,number of records,number of no-ALTs,number of SNPs,number of MNPs,number of indels,number of others,number of multiallelic sites,number of multiallelic SNP sites
+chr11_cohort.vcf,	27,	341950,	0,	308061,	0,	34294,	0,	3606,	283
